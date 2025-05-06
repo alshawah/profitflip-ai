@@ -2,26 +2,63 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>eBay Listing Lookup</title>
+    <title>eBay Finder</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .list { display: block; }
+        .card { border: 1px solid #ccc; padding: 10px; border-radius: 8px; }
+        img { max-width: 100%; height: auto; }
+    </style>
 </head>
 <body>
-    <h1>🔍 eBay Listing Info</h1>
+    <h1>eBay Listing Viewer</h1>
+
     <form method="POST">
-        <label for="item_id">Enter Listing ID:</label>
-        <input type="text" name="item_id" id="item_id" required>
-        <button type="submit">Fetch</button>
+        <h3>Search by Item ID:</h3>
+        <input type="hidden" name="mode" value="id">
+        <input type="text" name="item_id" placeholder="Enter legacy item ID">
+        <button type="submit">Search</button>
+    </form>
+
+    <hr>
+
+    <form method="POST">
+        <h3>Keyword Search:</h3>
+        <input type="hidden" name="mode" value="search">
+        <input type="text" name="query" placeholder="e.g. iPhone 13">
+        <input type="text" name="postcode" placeholder="Optional postcode">
+        <button type="submit">Search Listings</button>
     </form>
 
     {% if error %}
-        <p style="color: red;">❌ {{ error }}</p>
+        <p style="color: red;">{{ error }}</p>
     {% endif %}
 
     {% if item %}
-        <h2>✅ Item Found</h2>
-        <p><strong>Title:</strong> {{ item.title }}</p>
-        <p><strong>Price:</strong> {{ item.price.value }} {{ item.price.currency }}</p>
-        <p><strong>Condition:</strong> {{ item.condition }}</p>
-        <p><a href="{{ item.itemWebUrl }}" target="_blank">View on eBay</a></p>
+        <h2>Single Item Details:</h2>
+        <div class="card">
+            <h3>{{ item.title }}</h3>
+            <p>Price: {{ item.price.value }} {{ item.price.currency }}</p>
+            <p>Condition: {{ item.condition }}</p>
+            <p>Seller: {{ item.seller.username }} ({{ item.seller.feedbackScore }})</p>
+            <a href="{{ item.itemWebUrl }}" target="_blank">View on eBay</a>
+        </div>
+    {% endif %}
+
+    {% if results %}
+        <h2>Search Results ({{ results|length }} items):</h2>
+        <div class="grid">
+            {% for item in results %}
+                <div class="card">
+                    <h4>{{ item.title }}</h4>
+                    <img src="{{ item.image.imageUrl }}" alt="Item image">
+                    <p>Price: {{ item.price.value }} {{ item.price.currency }}</p>
+                    <p>Condition: {{ item.condition }}</p>
+                    <a href="{{ item.itemWebUrl }}" target="_blank">View</a>
+                </div>
+            {% endfor %}
+        </div>
     {% endif %}
 </body>
 </html>
